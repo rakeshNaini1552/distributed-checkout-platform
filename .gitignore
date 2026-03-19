@@ -1,0 +1,22 @@
+cat > "/Users/rakeshnaini/Rakesh-Personal/Projects/my projects/spring-project/.gitignore" << 'EOF'
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Maven
+target/
+*.class
+
+# Logs
+*.log
+
+# Environment
+.env
+EOF
