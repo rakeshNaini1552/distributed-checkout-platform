@@ -1,0 +1,52 @@
+# === Maven ===
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# === Gradle (if present) ===
+.gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# === IDEs ===
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Eclipse / STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# === OS-specific ===
+.DS_Store
+Thumbs.db
+
+# === Logs & temp ===
+*.log
+*.tmp
+*.swp
+
+# === Ignore build/test output but keep source ===
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# === Optional: ignore local env files ===
+.env

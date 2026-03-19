@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/Common-events-kafka" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/GATEWAY_SERVICE" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/eureka-service" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/order-service" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/user-service" vcs="Git" />
+  </component>
+</project>

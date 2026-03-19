@@ -1,0 +1,59 @@
+server:
+  port: 8082
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: circuitbreakers,circuitbreakerevents,health,info, metrics
+
+jwt:
+  secret: MySuperSecretKeyThatIsLongEnough123456
+
+resilience4j:
+  retry:
+    instances:
+      userServiceRetry:       # unique name for retry instance
+        max-attempts: 3       # try 3 times before failing
+        wait-duration: 2s     # wait 2 seconds between retries
+
+  circuitbreaker:
+    instances:
+      userServiceCB:          # unique name for circuit breaker
+        sliding-window-size: 10          # look at last 10 calls
+        failure-rate-threshold: 50       # if 50% fail → open breaker
+        wait-duration-in-open-state: 10s # stay open for 10 seconds before trying again
+
+spring:
+  application:
+    name: ORDER-SERVICE
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_service
+    username: postgres
+    password: "0000"
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+# Kafka configs
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#    consumer:
+#      group-id: user-service-group
+#      auto-offset-reset: earliest
+#    consumer-properties:
+#      spring.json.trusted.packages: "*"
+
+
