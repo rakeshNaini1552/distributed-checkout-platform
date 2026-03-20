@@ -1,16 +1,16 @@
 package com.example.order.service;
 
 
+import com.example.events.OrderCreatedEvent;
+import com.example.events.OrderStatus;
 import com.example.order.client.UserClient;
+import com.example.order.config.JwtUser;
 import com.example.order.dto.OrderRequest;
 import com.example.order.dto.OrderResponse;
 import com.example.order.dto.UserDto;
-import com.example.order.events.OrderCreatedEvent;
 import com.example.order.kafka.OrderEventPublisher;
 import com.example.order.model.Order;
-import com.example.order.model.OrderStatus;
 import com.example.order.repository.OrderRepository;
-import com.example.order.config.JwtUser;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -54,7 +54,7 @@ public class OrderService {
                 order.getUserId(),
                 order.getItem(),
                 order.getPrice(),
-                order.getStatus(),
+                com.example.events.OrderStatus.valueOf(order.getStatus().name()),
                 order.getCreatedAt()
         );
 

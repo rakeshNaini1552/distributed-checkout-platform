@@ -1,5 +1,6 @@
 package com.example.order.model;
 
+import com.example.events.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

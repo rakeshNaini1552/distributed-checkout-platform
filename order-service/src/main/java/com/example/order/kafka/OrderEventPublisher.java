@@ -1,6 +1,6 @@
 package com.example.order.kafka;
 
-import com.example.order.events.OrderCreatedEvent;
+import com.example.events.OrderCreatedEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
