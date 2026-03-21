@@ -13,7 +13,7 @@ management:
         include: circuitbreakers,circuitbreakerevents,health,info, metrics
 
 jwt:
-  secret: MySuperSecretKeyThatIsLongEnough123456
+  secret: this_is_a_super_long_secret_key_with_32+_chars!
 
 resilience4j:
   retry:

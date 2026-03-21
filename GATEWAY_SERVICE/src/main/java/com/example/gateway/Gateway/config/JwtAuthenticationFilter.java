@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.HttpHeaders;
@@ -21,10 +22,12 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class JwtAuthenticationFilter implements GlobalFilter {
 
-    // ✅ Use the SAME secret key as your User Service
-    private final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(
-            "this_is_a_super_long_secret_key_with_32+_chars!".getBytes()
-    );
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    private SecretKey getSecretKey() {
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -48,7 +51,7 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         try {
             // ✅ 3. Parse and validate JWT
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(SECRET_KEY)
+                    .setSigningKey(getSecretKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
