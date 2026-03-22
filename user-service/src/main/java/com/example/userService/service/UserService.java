@@ -23,12 +23,10 @@ public class UserService {
     private PasswordEncoder passwordEncoder;
 
     public User findById(Integer id) {
-        System.out.println("HI ra rakesh");
         return repo.findById(id).orElseThrow(()-> new UserNotFoundException("User not found with id:" + id));
     }
 
     public User findByEmail(String email) {
-        System.out.println("HI ra rakesh");
         return repo.findByEmail(email).orElseThrow(()-> new UserNotFoundException("User not found with id:" + email));
     }
 

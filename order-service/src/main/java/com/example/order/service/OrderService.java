@@ -3,14 +3,17 @@ package com.example.order.service;
 
 import com.example.events.OrderCreatedEvent;
 import com.example.events.OrderStatus;
+import com.example.order.client.ProductClient;
 import com.example.order.client.UserClient;
 import com.example.order.config.JwtUser;
 import com.example.order.dto.OrderRequest;
 import com.example.order.dto.OrderResponse;
+import com.example.order.dto.ProductDto;
 import com.example.order.dto.UserDto;
 import com.example.order.kafka.OrderEventPublisher;
 import com.example.order.model.Order;
 import com.example.order.repository.OrderRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -23,32 +26,39 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderEventPublisher orderEventPublisher;
     private final UserClient userClient;
+    private final ProductClient productClient;
 
 
-    public OrderService(OrderRepository orderRepository, OrderEventPublisher orderEventPublisher, UserClient userClient) {
+    public OrderService(OrderRepository orderRepository, OrderEventPublisher orderEventPublisher, UserClient userClient, ProductClient productClient) {
+        this.productClient = productClient;
         this.orderRepository = orderRepository;
         this.orderEventPublisher = orderEventPublisher;
         this.userClient = userClient;
 
     }
 
+    @Transactional
     public Order createOrder(OrderRequest orderRequest) {
 
         JwtUser jwtUser = (JwtUser) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
-        // 1️⃣ Save order in DB
+
+        // 1. Resolve product details from Product Service via Feign
+        ProductDto product = productClient.getProductById(orderRequest.getProductId());
+
+        // 2. Save order with real product name and price
         Order order = Order.builder()
                 .userId(jwtUser.userId())
-                .item(orderRequest.getItem())
-                .price(orderRequest.getPrice())
+                .item(product.getName())
+                .price(product.getPrice())
                 .createdAt(LocalDateTime.now())
                 .status(OrderStatus.CREATED)
                 .build();
         orderRepository.save(order);
 
-        // 2️⃣ Build Kafka Event
+        // 3. Build and publish Kafka event
         OrderCreatedEvent event = new OrderCreatedEvent(
                 order.getId().toString(),
                 order.getUserId(),
@@ -58,7 +68,6 @@ public class OrderService {
                 order.getCreatedAt()
         );
 
-        // 3️⃣ Publish Kafka Event
         orderEventPublisher.publishOrderCreatedEvent(event);
 
         return order;
