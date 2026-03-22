@@ -58,4 +58,6 @@ spring:
       properties:
         spring.json.trusted.packages: "*"
 
-
+ai:
+  service:
+    url: http://localhost:8085

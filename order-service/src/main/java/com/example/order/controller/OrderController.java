@@ -1,6 +1,7 @@
 package com.example.order.controller;
 
 
+import com.example.order.dto.AiRecommendationDto;
 import com.example.order.dto.OrderRequest;
 import com.example.order.dto.OrderResponse;
 import com.example.order.model.Order;
@@ -32,6 +33,11 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponse> getOrderDetails(@PathVariable Integer id) {
         return ResponseEntity.ok(orderService.getOrderDetailsByOrderId(id));
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public ResponseEntity<List<AiRecommendationDto>> getRecommendations(@PathVariable Integer id) {
+        return ResponseEntity.ok(orderService.getRecommendationsByOrderId(id));
     }
 
 }

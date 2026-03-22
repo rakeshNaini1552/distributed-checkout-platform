@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @FeignClient(name = "PRODUCT-SERVICE")
 public interface ProductClient {
@@ -16,6 +17,16 @@ public interface ProductClient {
     @Retry(name = "userServiceRetry")
     @CircuitBreaker(name = "userServiceCB", fallbackMethod = "fallbackProduct")
     ProductDto getProductById(@PathVariable("id") Integer id);
+
+    @GetMapping("/products")
+    @Retry(name = "userServiceRetry")
+    @CircuitBreaker(name = "userServiceCB", fallbackMethod = "fallbackProducts")
+    List<ProductDto> getAllProducts();
+
+    default List<ProductDto> fallbackProducts(Throwable ex) {
+        System.out.println("Product Service is DOWN, returning empty catalog");
+        return List.of();
+    }
 
     default ProductDto fallbackProduct(Integer id, Throwable ex) {
         System.out.println("Product Service is DOWN, returning fallback for product: " + id);

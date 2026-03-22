@@ -6,16 +6,14 @@ import com.example.events.OrderStatus;
 import com.example.order.client.ProductClient;
 import com.example.order.client.UserClient;
 import com.example.order.config.JwtUser;
-import com.example.order.dto.OrderRequest;
-import com.example.order.dto.OrderResponse;
-import com.example.order.dto.ProductDto;
-import com.example.order.dto.UserDto;
+import com.example.order.dto.*;
 import com.example.order.kafka.OrderEventPublisher;
 import com.example.order.model.Order;
+import com.example.order.repository.OrderRecommendationRepository;
 import com.example.order.repository.OrderRepository;
-import jakarta.transaction.Transactional;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,14 +25,17 @@ public class OrderService {
     private final OrderEventPublisher orderEventPublisher;
     private final UserClient userClient;
     private final ProductClient productClient;
+    private final AiService aiService;
+    private final OrderRecommendationRepository recommendationRepository;
 
 
-    public OrderService(OrderRepository orderRepository, OrderEventPublisher orderEventPublisher, UserClient userClient, ProductClient productClient) {
+    public OrderService(AiService aiService, OrderRepository orderRepository, OrderEventPublisher orderEventPublisher, UserClient userClient, ProductClient productClient, OrderRecommendationRepository recommendationRepository) {
         this.productClient = productClient;
         this.orderRepository = orderRepository;
         this.orderEventPublisher = orderEventPublisher;
         this.userClient = userClient;
-
+        this.aiService = aiService;
+        this.recommendationRepository = recommendationRepository;
     }
 
     @Transactional
@@ -57,6 +58,9 @@ public class OrderService {
                 .status(OrderStatus.CREATED)
                 .build();
         orderRepository.save(order);
+
+        // Async AI recommendations — non-blocking
+        aiService.generateRecommendations(order);
 
         // 3. Build and publish Kafka event
         OrderCreatedEvent event = new OrderCreatedEvent(
@@ -133,4 +137,13 @@ public class OrderService {
                 .createdAt(order.getCreatedAt())
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    public List<AiRecommendationDto> getRecommendationsByOrderId(Integer orderId) {
+        return recommendationRepository.findByOrderId(orderId)
+                .stream()
+                .map(r -> new AiRecommendationDto(r.getProductName()))
+                .toList();
+    }
+
 }
