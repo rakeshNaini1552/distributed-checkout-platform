@@ -6,9 +6,9 @@ spring:
     name: INVENTORY-SERVICE
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/inventory_service
-    username: postgres
-    password: "0000"
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/inventory_service}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -22,7 +22,7 @@ spring:
       mode: always
 
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
     consumer:
       group-id: inventory-service-group
       auto-offset-reset: earliest
@@ -30,6 +30,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
+        spring.json.type.mapping: "com.example.order.events.OrderCreatedEvent:com.example.events.OrderCreatedEvent"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -37,7 +38,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
 
 management:
   endpoints:

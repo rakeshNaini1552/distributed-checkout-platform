@@ -1,5 +1,5 @@
 server:
-  port: 8761  # default Eureka server port
+  port: 8761
 
 spring:
   application:
@@ -9,9 +9,9 @@ management:
   endpoints:
     web:
       exposure:
-        include: circuitbreakers,circuitbreakerevents,health,info, metrics
+        include: circuitbreakers,circuitbreakerevents,health,info,metrics
 
 eureka:
   client:
-    register-with-eureka: false  # Server does not register itself
-    fetch-registry: false        # Server does not query itself
+    register-with-eureka: false
+    fetch-registry: false

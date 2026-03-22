@@ -4,39 +4,42 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka/}
 
 management:
   endpoints:
     web:
       exposure:
-        include: circuitbreakers,circuitbreakerevents,health,info, metrics
+        include: circuitbreakers,circuitbreakerevents,health,info,metrics
 
 jwt:
-  secret: this_is_a_super_long_secret_key_with_32+_chars!
+  secret: ${JWT_SECRET}
+
+ai:
+  service:
+    url: ${AI_SERVICE_URL:http://localhost:8085}
 
 resilience4j:
   retry:
     instances:
-      userServiceRetry:       # unique name for retry instance
-        max-attempts: 3       # try 3 times before failing
-        wait-duration: 2s     # wait 2 seconds between retries
-
+      userServiceRetry:
+        max-attempts: 3
+        wait-duration: 2s
   circuitbreaker:
     instances:
-      userServiceCB:          # unique name for circuit breaker
-        sliding-window-size: 10          # look at last 10 calls
-        failure-rate-threshold: 50       # if 50% fail → open breaker
-        wait-duration-in-open-state: 10s # stay open for 10 seconds before trying again
+      userServiceCB:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
 
 spring:
   application:
     name: ORDER-SERVICE
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/order_service
-    username: postgres
-    password: "0000"
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/order_service}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -44,9 +47,8 @@ spring:
       ddl-auto: update
     show-sql: true
 
-# Kafka configs
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -57,7 +59,3 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-
-ai:
-  service:
-    url: http://localhost:8085
