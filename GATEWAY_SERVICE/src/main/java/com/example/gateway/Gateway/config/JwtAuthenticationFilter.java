@@ -1,6 +1,5 @@
 package com.example.gateway.Gateway.config;
 
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -9,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -35,12 +35,17 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         String path = request.getURI().getPath();
         System.out.println(">> Gateway Filter triggered for path: " + path);
 
-        // ✅ 1. Allow public login endpoint without token
-        if (path.startsWith("/auth/login")) {
+        // ✅ 1. Allow OPTIONS preflight requests
+        if (request.getMethod() == HttpMethod.OPTIONS) {
             return chain.filter(exchange);
         }
 
-        // ✅ 2. Extract Authorization header
+        // ✅ 2. Allow public endpoints without token
+        if (path.startsWith("/auth/login") || path.startsWith("/users/user")) {
+            return chain.filter(exchange);
+        }
+
+        // ✅ 3. Extract Authorization header
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return this.unauthorized(exchange, "Missing or invalid Authorization header");
@@ -49,14 +54,14 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         String token = authHeader.substring(7);
 
         try {
-            // ✅ 3. Parse and validate JWT
+            // ✅ 4. Parse and validate JWT
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(getSecretKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
 
-            // ✅ 4. (Optional) Forward user claims as headers to downstream services
+            // ✅ 5. Forward user claims as headers to downstream services
             exchange = exchange.mutate()
                     .request(request.mutate()
                             .header("X-User-Id", claims.getSubject())
@@ -67,7 +72,7 @@ public class JwtAuthenticationFilter implements GlobalFilter {
             return this.unauthorized(exchange, "Invalid or Expired JWT");
         }
 
-        // ✅ 5. Token is valid → forward request
+        // ✅ 6. Token is valid → forward request
         return chain.filter(exchange);
     }
 
@@ -78,4 +83,3 @@ public class JwtAuthenticationFilter implements GlobalFilter {
         return response.writeWith(Mono.just(response.bufferFactory().wrap(bytes)));
     }
 }
-

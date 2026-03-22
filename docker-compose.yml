@@ -146,6 +146,16 @@ services:
     networks:
       - checkout-network
 
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway-service
+    networks:
+      - checkout-network
+
 volumes:
   postgres_data:
 
