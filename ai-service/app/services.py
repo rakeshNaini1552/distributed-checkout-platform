@@ -7,10 +7,7 @@ from langchain.schema.output_parser import StrOutputParser
 
 load_dotenv()
 
-llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    api_key=os.getenv("GROQ_API_KEY")
-)
+llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=os.getenv("GROQ_API_KEY"))
 
 parser = StrOutputParser()
 
@@ -32,25 +29,30 @@ Example: ["Mouse", "Keyboard", "Monitor"]
 
 recommend_chain = recommend_prompt | llm | parser
 
-def get_recommendations(order_id: int, purchased_item: str, 
-                         category: str, available_products: list) -> list:
+
+def get_recommendations(
+    order_id: int, purchased_item: str, category: str, available_products: list
+) -> list:
     if order_id in recommend_cache:
         print(f"Cache hit for order {order_id}")
         return recommend_cache[order_id]
 
-    result = recommend_chain.invoke({
-        "purchasedItem": purchased_item,
-        "category": category,
-        "availableProducts": ", ".join(available_products)
-    })
-
     try:
+        result = recommend_chain.invoke(
+            {
+                "purchasedItem": purchased_item,
+                "category": category,
+                "availableProducts": ", ".join(available_products),
+            }
+        )
         recommendations = json.loads(result.strip())
-    except json.JSONDecodeError:
-        recommendations = [r.strip() for r in result.split(",")]
+        recommend_cache[order_id] = recommendations
+        return recommendations
+    except Exception as e:
+        import traceback
 
-    recommend_cache[order_id] = recommendations
-    return recommendations
+        print(f"FULL ERROR: {traceback.format_exc()}")
+        raise e
 
 
 # ─── Triage ──────────────────────────────────────────────
@@ -72,11 +74,14 @@ No explanation. No extra text. Just the JSON.
 
 triage_chain = triage_prompt | llm | parser
 
+
 def get_triage(failures: list) -> dict:
-    failures_text = "\n".join([
-        f"Order {f['orderId']}: item={f['item']}, reason={f['reason']}, time={f['timestamp']}"
-        for f in failures
-    ])
+    failures_text = "\n".join(
+        [
+            f"Order {f['orderId']}: item={f['item']}, reason={f['reason']}, time={f['timestamp']}"
+            for f in failures
+        ]
+    )
 
     result = triage_chain.invoke({"failures": failures_text})
 
@@ -86,7 +91,7 @@ def get_triage(failures: list) -> dict:
         return {
             "summary": result,
             "severity": 3,
-            "recommendedAction": "Manual investigation required"
+            "recommendedAction": "Manual investigation required",
         }
 
 
@@ -111,6 +116,7 @@ No explanation. No extra text. Just the JSON.
 
 search_chain = search_prompt | llm | parser
 
+
 def parse_search_query(query: str) -> dict:
     result = search_chain.invoke({"query": query})
 
@@ -123,5 +129,5 @@ def parse_search_query(query: str) -> dict:
             "dateFrom": None,
             "dateTo": None,
             "minPrice": None,
-            "maxPrice": None
+            "maxPrice": None,
         }
